@@ -4,6 +4,8 @@ Shows timed lyrics for FlatOut 2's soundtrack in the menus, in races, and in stu
 
 Karaoke also works together with the [FlatOut 2 VR](https://github.com/Saikava/flatout2-vr) mod.
 
+![Karaoke lyrics during a race](docs/ingame.jpg)
+
 ## Quick start
 
 1. Extract `FlatOut2-Lyrics-<version>.zip` into the FlatOut 2 folder (the one that contains `FlatOut2.exe`). If `winmm.dll` is already there from another ASI mod, keep it.
@@ -55,6 +57,10 @@ cmake --build build --config Release
 ```
 
 The mod is `build\Release\FO2Lyrics.asi`. Pass `-DFO2_GAME_DIR="C:\Path\To\FlatOut 2"` to copy it into that install's `scripts\` folder after each build. Pack a release zip with `tools\package_lyrics.ps1 -Version 1.0.0 -AsiLoader path\to\winmm.dll`.
+
+## Disclaimer
+
+This mod is vibe-coded and provided "as is", without warranty of any kind. The author shall not be liable for any claim, damages or other liability.
 
 ## License
 
