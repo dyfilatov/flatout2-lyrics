@@ -18,8 +18,12 @@ $stage = Join-Path $Out "FlatOut2-Lyrics-$Version"
 if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force "$stage\scripts\FO2Lyrics-licenses" | Out-Null
 
+$asi = Join-Path $repo "build\Release\FO2Lyrics.asi"
+if (-not (Test-Path $asi)) { $asi = Join-Path $repo "build\FO2Lyrics.asi" }
+if (-not (Test-Path $asi)) { throw "FO2Lyrics.asi was not built. Configure an x86 build and compile Release first." }
+
 Copy-Item $AsiLoader "$stage\winmm.dll"
-Copy-Item "$repo\build\FO2Lyrics.asi" "$stage\scripts\"
+Copy-Item $asi "$stage\scripts\FO2Lyrics.asi"
 Copy-Item "$repo\install\FO2Lyrics.ini" "$stage\scripts\"
 Copy-Item "$repo\README.md" "$stage\scripts\FO2Lyrics-README.md"
 Copy-Item "$repo\tools\fetch_lyrics.ps1" "$stage\scripts\"
