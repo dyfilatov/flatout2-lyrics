@@ -1,0 +1,119 @@
+#pragma once
+#include <cstdint>
+#include <string>
+
+void LogInit(const std::wstring& path);
+void Log(const char* fmt, ...);
+
+// Redirect the E8 call at `site` (which must currently call `expected`) to `hook`.
+bool PatchCall(uintptr_t site, uintptr_t expected, const void* hook);
+// Replace the pointer in a vtable slot (which must currently hold `expected`); returns the old value.
+bool PatchPointer(uintptr_t slot, uintptr_t expected, const void* hook);
+// Replace n bytes of code at `addr` (which must currently be `expected`) with `code`.
+bool PatchCode(uintptr_t addr, const void* expected, const void* code, size_t n);
+
+// Directory of this ASI (with trailing backslash).
+const std::wstring& ModuleDir();
+
+struct Config
+{
+    // [Test]
+    float autoShotSeconds = 0.0f;
+    bool vrEyesWithoutHeadset = false;  // render the eyes (and the mirror) even when the headset wants no frames
+    float testPaceHz = 0;    // races without a headset: pace the game like a headset at this rate (0 = off)
+    bool testPaceJitter = false;  // the pretend headset's display times wander and jump like SteamVR's
+    bool stepProbe = false;  // log how evenly the player's car moves from frame to frame
+    float testHeadOffset[3] = {};  // metres added to the eye positions (x right, y up, z forward)
+    float testHeadYawDeg = 0;      // the head turned right by this much (background mode command "head")
+    float testHeadPitchDeg = 0;    // and up by this much
+    bool testFakeHeadset = false;  // no runtime: races render the eyes straight ahead (with PaceHz, VrEyesWithoutHeadset)
+    bool testMoveCards = false;    // the Touch controllers move the cockpit's cards (MoveCockpitCards)
+    bool testBackground = false;  // window on another monitor, no sound, keys from a file (background.h)
+    bool testSampling = false;    // profiler: sample where the game thread runs (slow frames are logged)
+    bool testShareEyes = true;     // the right eye copies the left eye's leaf and grass cards (0: each eye builds its own)
+    bool testDeviceTiming = false;  // profiler: time every draw call and buffer lock (listed in the slow frames' logs)
+    bool testRecord = false;      // record the next race's input (record.h)
+    bool testReplay = false;      // play the recorded input back in the race
+    bool testFrameTimes = false;  // write each race frame's display time and start to scripts\fo2vr_frametimes.csv
+    bool testControllersLog = false;  // log the VR controllers' state as the game reads it, the force-feedback effects and the vibration
+    int testReplayStop = 0;
+    int testReplayShots[8] = {};
+    int testReplayTrace = 0;  // replay: log one frame of render calls at this race frame (background mode)  // replay: screenshots at these race frames (background mode)       // replay: log the benchmark totals and close the game after this many race frames (0 = whole race)
+    // [VR]
+    bool vrEnabled = true;
+    std::wstring vrRuntime = L"default";  // "default", "steamvr" or the path of a runtime .json
+    float vrRenderScale = 1.0f;
+    int vrMsaa = 4;
+    float vrScreenDistance = 2.0f;
+    float vrScreenWidth = 2.4f;
+    float vrWorldScale = 1.0f;
+    int vrMirror = 1;  // in races the monitor shows the left eye instead of its own render (2: a steady view of it, for videos)
+    float vrMonitorFov = 85.0f;       // Mirror=2: the view's width, degrees
+    float vrMonitorPitch = 10.0f;     // Mirror=2: the view aimed down by this, degrees
+    float vrMonitorSmoothing = 0.3f;  // Mirror=2: how long the view takes to follow the head, seconds
+    bool vrPhysicsAtHeadsetRate = true;  // races: one physics step per headset frame
+    int vrHud = 1;                 // races: the game's HUD on a panel in the headset (2: not while racing)
+    float vrHudDistance = 1.2f;    // metres in front of the recenter origin
+    float vrHudWidth = 1.3f;       // metres
+    float vrHudHeight = 0.0f;      // metres above the recenter origin
+    float vrLodDistance = 0.0f;    // level-of-detail and draw distances times this (0 = no limit)
+    float vrGrassDistance = 5.0f;  // how far grass is drawn, times this
+    float vrViewDistance = 3.0f;   // the far clipping distance times this
+    bool vrFloatDepth = true;      // the eyes' depth in floats, reversed (what lies close together far away keeps apart)
+    float vrSpeedBlur = 1.0f;      // races: the game's speed blur in the eyes, this many times as strong (0: none)
+    float vrSpeedZoom = 1.0f;      // races: the game's widening of the field of view at speed, times this
+    float vrCameraOffset[3] = {};  // races: metres the eyes are moved against the car (x right, y up, z forward)
+    bool vrCockpit = true;         // the camera inside the car shows the driver, the steering wheel and the windows
+    bool vrStartInCockpit = true;  // once: the game's race camera set to the one inside the car (the ini is then set to 0)
+    bool vrCockpitHud = true;      // the cockpit: the HUD's gauges, position, lap and map on the dashboard (not on the panel)
+    float vrNearClip = 0.05f;      // the cockpit: the eyes' near clipping distance, metres (0: the camera's own)
+    float vrCockpitGlass = 0.3f;   // the cockpit: how much of the game's glass the windows show (0: none, 1: all of it)
+    int vrEjectView = 1;           // the driver thrown out: the eyes in his head (1: when they were in the cockpit, 2: from any
+                                   // camera, 0: the game's cut to the camera behind him)
+    int vrMirrors = 2;             // the cockpit: the side mirrors show what is behind (1: one picture for both eyes,
+                                   // 2: one for each eye, 0: the game's dark glass)
+    float vrMirrorRadius = 1.4f;   // the mirrors' glass is convex, of this radius (metres): it shows more, smaller (0: flat)
+    bool vrLargeAddressAware = true;  // FlatOut2.exe marked to use 4 GB of memory, not 2 (see largeaddress.cpp)
+    bool vrMotionControllers = true;  // the VR controllers as a game controller of the game's ("VR controllers")
+    float vrRumble = 1.0f;            // the game's force feedback as vibration (Xbox controllers, the VR controllers),
+                                      // this strong (0 = none)
+    std::wstring vrPauseButton;       // a VR controllers' button that also pauses (controllers.cpp, kPauseButtons; "": none)
+    bool vrGrabWheel = false;         // experimental: the VR controllers' grips hold the car's steering wheel, the hands turn it
+    float vrWheelTurn = 90.0f;        // GrabWheel: the hands' turn for full lock, degrees
+    float vrWheelRange = 0.0f;        // a steering wheel's turn from lock to lock, degrees: the cockpit's wheel turns as it (0 = as the car's steering)
+    float vrEngineRumble = 0.0f;      // the engine's revs and throttle as a steady vibration, this strong (0 = none)
+    // [Lyrics]
+#ifdef FO2_LYRICS_STANDALONE
+    bool lyricsEnabled = true;       // standalone FO2Lyrics.asi defaults to enabled (FO2Lyrics.ini: Lyrics=1)
+#else
+    bool lyricsEnabled = false;      // integrated FO2VR.asi defaults to off (FO2VR.ini: Lyrics=0)
+#endif
+    int lyricsLines = 3;             // how many lines show at once (1..6)
+    float lyricsScale = 1.0f;        // the text's size, this many times as tall
+    float lyricsY = 0.82f;           // in-race vertical position on UI (0.0 = top, 1.0 = bottom; default 0.82)
+    uint32_t lyricsColour = 0x002828FF;      // the words not yet sung (FlatOut 2 game red, 0x00BBGGRR)
+    uint32_t lyricsSungColour = 0x0000D7FF;  // the words already sung / when to sing (FlatOut 2 yellow, 0x00BBGGRR)
+    // [Log]
+    float logIntervalSeconds = 2.0f;
+    // [Keys]
+    int keyScreenshot = 0x7A;  // F11
+    int keyRecenter = 0x77;    // F8
+    int keyHud = 0x78;         // F9: Hud 1 <-> 2
+    int keyLyrics = 0x79;      // F10: lyrics on/off
+    // [VR] CameraOffset while held (the numeric keypad: 8 2 4 6, + -), and back to 0 (5)
+    int keyCameraUp = 0x68, keyCameraDown = 0x62, keyCameraLeft = 0x64, keyCameraRight = 0x66;
+    int keyCameraForward = 0x6B, keyCameraBack = 0x6D, keyCameraReset = 0x65;
+};
+extern Config g_cfg;
+void LoadConfig(const wchar_t* iniFile = L"FO2VR.ini");
+// Writes [VR] CameraOffset to the ini (the camera keys changed it).
+void SaveCameraOffset();
+// Sets a key's value in the active ini where it stands, keeping the comment after it.
+void SaveIniValue(const char* section, const char* key, const char* value);
+// [VR] StartInCockpit: the game's race camera put inside the car, once (at the start, before the game reads its settings).
+void StartInCockpit();
+
+double NowSeconds();
+
+// Timestamp of this build (util.cpp is always recompiled, see CMakeLists.txt).
+const char* BuildStamp();

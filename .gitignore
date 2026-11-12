@@ -1,0 +1,5 @@
+/build/
+*.lrc
+lyrics-review.json
+__pycache__/
+*.pyc
